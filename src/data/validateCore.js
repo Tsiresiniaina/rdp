@@ -13,8 +13,8 @@ export function validateCore(core) {
   if (!core.matricePost) {
     errors.push(`Matrice Post : le champ matrice post est manquant`);
   }
-  if (!core.marquageInitial) {
-    errors.push(`Marquage Initial : le champ marquage initial est manquant`);
+  if (!core.initialMarking) {
+    errors.push(`Initial Marking : le champ initial marking est manquant`);
   }
   //SI CE SONT DES TABLEAUX
   if (!Array.isArray(core.places)) {
@@ -29,7 +29,7 @@ export function validateCore(core) {
   if (!Array.isArray(core.matricePost)) {
     errors.push(`Matrice Post : la matrice post n'est pas un tableau`);
   }
-  if (!Array.isArray(core.marquageInitial)) {
+  if (!Array.isArray(core.initialMarking)) {
     errors.push(`Marquage Initial : le marquage initial n'est pas un tableau`);
   }
   //VERIFICATION DES DIMENSIONS
@@ -43,7 +43,7 @@ export function validateCore(core) {
       `Matrice Post : le nombre de lignes de la matrice post n'est pas égal au nombre de places`,
     );
   }
-  if (core.marquageInitial.length !== core.places.length) {
+  if (core.initialMarking.length !== core.places.length) {
     errors.push(
       `Marquage Initial : le nombre d'éléments du marquage initial n'est pas égal au nombre de places`,
     );

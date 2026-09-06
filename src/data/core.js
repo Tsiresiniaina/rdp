@@ -128,5 +128,5 @@ matricePost  : [
     [0,0,0,0,0,0,0,0,0,0,1,0,0,0], //P10
 ],
 //MARQUAGE INITIAL
-marquageInitial  : [1,1,0,0,0,0,0,0,0,0]
+initialMarking  : [1,1,0,0,0,0,0,0,0,0]
 }
