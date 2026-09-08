@@ -12,7 +12,7 @@ console.log(errors);
 console.log(isCrossable(core, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "T2"));
 console.log(fire(core, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0], "T2"));
 console.log(getCrossableTransitions(core, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0]));
-console.warn(buildSequence(core, [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], ["T3a", "T4"]));
+console.warn(buildSequence(core, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0], ["T2", "T3b","T5a","T6","T7","T8b","T9a","T7","T8a","T10"]));
 </script>
 
 <template>
