@@ -1,4 +1,6 @@
+
 export const core = {
+    
 // DESCRITION DES PLACES
 places  :  [
     {
