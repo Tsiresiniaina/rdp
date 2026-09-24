@@ -6,17 +6,12 @@ import PetriNetwork from "./components/PetriNetwork.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import { scenariosList } from "./data/scenariosList.js";
 
-const {
-  currentMarking,
-  stepIndex,
-  isFirstStep,
-  isLastStep,
-  nextStep,
-  previousStep,
-  reset,
-  loadSequence,
-} = useSimulation(core, scenariosList[0].sequence);
 
+const {
+  currentMarking, currentFireId,
+  isFirstStep, isLastStep,
+  nextStep, previousStep, reset, loadSequence,
+} = useSimulation(core, scenariosList[0].sequence)
 function changeScenario(scenarioId) {
   console.log("Scenario sélectionné :", scenarioId);
   const selectedScenario = scenariosList.find((s) => s.id === scenarioId);
@@ -28,7 +23,12 @@ console.log("currentMarking =", JSON.stringify(currentMarking.value));
 
 <template>
   <div class="flex flex-row gap-4">
-    <PetriNetwork :core="core" :layout="layout" :marking="currentMarking" />
+   <PetriNetwork
+  :core="core"
+  :layout="layout"
+  :marking="currentMarking"
+  :fire-id="currentFireId"
+/>
    <ControlPanel
   :scenarios="scenariosList"
   :is-first-step="isFirstStep"
