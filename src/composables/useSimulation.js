@@ -1,34 +1,50 @@
 import { computed, ref } from "vue";
 import { buildSequence } from "../logic/sequence.js";
 
-export function useSimulation(core, transitionIds) {
+export function useSimulation(core, initialSequence) {
+  console.log("A initialSequence =", initialSequence);
+  const sequence = ref([...initialSequence]);
+  console.log("B sequence.value =", sequence.value);
   const stepIndex = ref(0);
-  const sequence = buildSequence(core, core.initialMarking, transitionIds);
 
-  const currentMarking = computed(() => sequence[stepIndex.value].marking);
-  const currentTransitionId = computed(() => sequence[stepIndex.value].fireId);
-  const isFirstStep = computed(() => stepIndex.value === 0);
-  const isLastStep = computed(() => stepIndex.value === sequence.length - 1);
+  const markings = computed(() => {
+    console.log("C sequence.value =", sequence.value);
+    return buildSequence(core,core.initialMarking, sequence.value);
+  });
+// --- dérivés
+const steps = computed(() => buildSequence(core, core.initialMarking, sequence.value))
+const currentStep = computed(() => steps.value[stepIndex.value])
+const currentMarking = computed(() => currentStep.value.marking)
+const currentFireId = computed(() => currentStep.value.fireId)
+
+const isFirstStep = computed(() => stepIndex.value === 0)
+const isLastStep = computed(() => stepIndex.value === steps.value.length - 1)
 
   function nextStep() {
-    if (stepIndex.value < sequence.length - 1) {
-      stepIndex.value++;
-    }
+    if (!isLastStep.value) stepIndex.value++;
   }
   function previousStep() {
-    if (stepIndex.value > 0) {
-      stepIndex.value--;
-    }
+    if (!isFirstStep.value) stepIndex.value--;
+  }
+  function reset() {
+    stepIndex.value = 0;
+  }
+
+  function loadSequence(newSequence) {
+    sequence.value = [...newSequence];
+    stepIndex.value = 0;
   }
 
   return {
+    sequence,
     stepIndex,
     currentMarking,
-    currentTransitionId,
     isFirstStep,
     isLastStep,
+    currentFireId,
     nextStep,
     previousStep,
-    sequence,
+    reset,
+    loadSequence,
   };
 }

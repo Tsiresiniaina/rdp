@@ -3,8 +3,12 @@ import { fire } from "./engine.js";
 //Determines the crossable transitions and builds a sequence of markings based on the given transition IDs. It starts with the initial marking and iteratively fires each transition, updating the marking accordingly. If a transition is not crossable with the current marking, it throws an error.
 export function buildSequence(core, marking, transitionIds) {
   let sequence = [];
+  if (!Array.isArray(transitionIds)) {
+  throw new TypeError(`buildSequence : transitionIds doit être un tableau, reçu ${transitionIds}`)
+}
   sequence.push({ marking: marking, fireId: null });
   let currentMarking = marking;
+  console.log('transitionIds =', transitionIds)
   for (let transition of transitionIds) {
     if (!isCrossable(core, currentMarking, transition)) {
       throw new Error(
