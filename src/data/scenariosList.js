@@ -2,10 +2,10 @@ export const scenariosList = [
   {
     id: "scenario1",
     name: "Scenario 1",
-    description: "The phone is not repaired and returned to the client.",
+    description: "Le téléphone n’est pas réparé et est retourné au client.",
     sequence: ["T2", "T3a", "T4"],
     conditions: {
-      reparation:"not required",
+      reparation: "not required",
       piecesPreTest: null,
       testResult: null,
       piecesPostTest: null,
@@ -14,7 +14,8 @@ export const scenariosList = [
   {
     id: "scenario2",
     name: "Scenario 2",
-    description: "Pieces unavailable, test not passed",
+    description:
+      "Pièces indisponibles, test échoué : commande des pièces, réparation, second test après réapprovisionnement.",
     sequence: [
       "T2",
       "T3b",
@@ -29,7 +30,7 @@ export const scenariosList = [
       "T10",
     ],
     conditions: {
-      reparation:"required",
+      reparation: "required",
       piecesPreTest: "unavailable",
       testResult: "failed",
       piecesPostTest: "available",
@@ -38,10 +39,11 @@ export const scenariosList = [
   {
     id: "scenario3",
     name: "Scenario 3",
-    description: "Pieces unavailable, test passed",
+    description:
+      "Pièces indisponibles, test réussi : commande des pièces puis réparation validée.",
     sequence: ["T2", "T3b", "T5a", "T6", "T7", "T8a", "T10"],
     conditions: {
-      reparation:"required",
+      reparation: "required",
       piecesPreTest: "unavailable",
       testResult: "passed",
       piecesPostTest: null,
@@ -50,7 +52,8 @@ export const scenariosList = [
   {
     id: "scenario4",
     name: "Scenario 4",
-    description: "Pieces available, test not passed",
+    description:
+      "Pièces disponibles, test échoué : reprise de la réparation. Pièces disponibles puis second test réussi.",
     sequence: [
       "T2",
       "T3b",
@@ -64,7 +67,7 @@ export const scenariosList = [
       "T10",
     ],
     conditions: {
-      reparation:"required",
+      reparation: "required",
       piecesPreTest: "available",
       testResult: "failed",
       piecesPostTest: "available",
@@ -73,13 +76,64 @@ export const scenariosList = [
   {
     id: "scenario5",
     name: "Scenario 5",
-    description: "Pieces available, test passed",
+    description:
+      "Pièces disponibles, test échoué : reprise de la réparation. Pièces indisponibles puis second test réussi.",
+    sequence: [
+      "T2",
+      "T3b",
+      "T5b",
+      "T7",
+      "T8b",
+      "T9b",
+      "T5a",
+      "T6",
+      "T7",
+      "T8a",
+      "T10",
+    ],
+    conditions: {
+      reparation: "required",
+      piecesPreTest: "available",
+      testResult: "failed",
+      piecesPostTest: "unavailable",
+    },
+  },
+  {
+    id: "scenario6",
+    name: "Scenario 6",
+    description: "Pièces disponibles, test réussi.",
     sequence: ["T2", "T3b", "T5b", "T7", "T8a", "T10"],
     conditions: {
-      reparation:"required",
+      reparation: "required",
       piecesPreTest: "available",
       testResult: "passed",
       piecesPostTest: null,
+    },
+  },
+  {
+    id: "scenario7",
+    name: "Scénario 7",
+    description:
+      "Pièces indisponibles, test échoué : commande, réparation, second test après nouvelle commande.",
+    sequence: [
+      "T2",
+      "T3b",
+      "T5a",
+      "T6",
+      "T7",
+      "T8b",
+      "T9b",
+      "T5a",
+      "T6",
+      "T7",
+      "T8a",
+      "T10",
+    ],
+    conditions: {
+      reparation: "required",
+      piecesPreTest: "unavailable",
+      testResult: "failed",
+      piecesPostTest: "unavailable",
     },
   },
 ];

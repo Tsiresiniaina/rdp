@@ -29,13 +29,14 @@ console.log("currentMarking =", JSON.stringify(currentMarking.value));
 <template>
   <div class="flex flex-row gap-4">
     <PetriNetwork :core="core" :layout="layout" :marking="currentMarking" />
-    <ControlPanel
-      :scenarios="scenariosList"
-      :isFirstStep="isFirstStep"
-      :isLastStep="isLastStep"
-      @nextStep="nextStep"
-      @previousStep="previousStep"
-      @scenarioChanged="changeScenario"
-    />
+   <ControlPanel
+  :scenarios="scenariosList"
+  :is-first-step="isFirstStep"
+  :is-last-step="isLastStep"
+  @next-step="nextStep"
+  @previous-step="previousStep"
+  @scenario-changed="changeScenario"
+  @reset="reset"
+/>
   </div>
 </template>
