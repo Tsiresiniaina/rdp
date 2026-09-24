@@ -6,8 +6,9 @@ const props = defineProps({
   isFirstStep: { type: Boolean, required: true },
   isLastStep:  { type: Boolean, required: true },
 })
-const emit = defineEmits(['nextStep', 'previousStep', 'scenarioChanged', 'reset']) // ★
+const emit = defineEmits(['nextStep', 'previousStep', 'scenarioChanged', 'reset'])
 
+// --- questions : une seule source de vérité pour ids, names et valeurs
 const questions = [
   { key: 'reparation', label: 'Réparation',
     options: [{ value: 'required', label: 'Requise' }, { value: 'not required', label: 'Non requise' }] },
@@ -22,15 +23,26 @@ const questions = [
     options: [{ value: 'available', label: 'Disponibles' }, { value: 'unavailable', label: 'Indisponibles' }] },
 ]
 
+// --- état
 const choices = reactive({
   reparation: null, piecesPreTest: null, testResult: null, piecesPostTest: null,
 })
 
-// ★ verrouillé dès qu'on a quitté l'étape 0
+// --- dérivés
 const isLocked = computed(() => !props.isFirstStep)
 
 const visibleQuestions = computed(() =>
   questions.filter((q) => !q.showIf || q.showIf(choices))
+)
+
+const answeredSummary = computed(() =>
+  visibleQuestions.value
+    .filter((q) => choices[q.key] !== null)
+    .map((q) => ({
+      key: q.key,
+      label: q.label,
+      value: q.options.find((o) => o.value === choices[q.key])?.label ?? choices[q.key],
+    }))
 )
 
 const matchedScenario = computed(() =>
@@ -41,6 +53,8 @@ const matchedScenario = computed(() =>
   ) ?? null
 )
 
+// --- effets
+// une question masquée perd sa réponse (évite un faux match avec une vieille valeur)
 watch(visibleQuestions, (visible) => {
   const visibleKeys = new Set(visible.map((q) => q.key))
   for (const q of questions) {
@@ -54,86 +68,113 @@ watch(matchedScenario, (scenario) => {
 </script>
 
 <template>
-  <aside class="w-full max-w-xs flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <header class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-slate-800">Scénario</h2>
+  <aside
+    class="w-full max-w-xs shrink-0 flex flex-col gap-6 border-l border-[#1C1F26] bg-[#0A0B0E] p-6 font-mono text-[#C9CDD4]"
+  >
+    <!-- En-tête -->
+    <header class="flex items-end justify-between border-b border-[#1C1F26] pb-4">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.25em] text-[#5C6270]">Simulation</p>
+        <h2 class="text-xl font-bold tracking-tight text-white">Scénario</h2>
+      </div>
       <span
-        class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-        :class="matchedScenario ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+        class="rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+        :class="matchedScenario ? 'bg-[#D4FF3F] text-[#0A0B0E]' : 'border border-[#3A3F4A] text-[#5C6270]'"
       >
         {{ matchedScenario ? matchedScenario.name : 'Incomplet' }}
       </span>
     </header>
 
-    <!-- ★ Bandeau + bouton quand la simulation est en cours -->
+    <!-- Verrou (simulation en cours) -->
     <div
       v-if="isLocked"
-      class="flex items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800"
+      class="flex items-center justify-between gap-3 border border-[#D4FF3F]/40 bg-[#D4FF3F]/5 px-3 py-2"
     >
-      <span>Simulation en cours — choix verrouillés</span>
+      <span class="flex items-center gap-2 text-xs text-[#D4FF3F]">
+        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#D4FF3F]" />
+        En cours
+      </span>
       <button
-        class="shrink-0 rounded-md border border-amber-300 bg-white px-2 py-1 font-medium text-amber-800 hover:bg-amber-100"
+        class="text-xs uppercase tracking-widest text-[#C9CDD4] underline-offset-4 hover:text-[#D4FF3F] hover:underline"
         @click="emit('reset')"
       >
-        ⟲ Nouveau scénario
+        ⟲ Nouveau
       </button>
     </div>
 
-    <fieldset
-      v-for="q in visibleQuestions"
-      :key="q.key"
-      :disabled="isLocked"
-      class="flex flex-col gap-2"
-      :class="isLocked && 'opacity-60'"
-    >
-      <legend class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {{ q.label }}
-      </legend>
-      <div class="grid grid-cols-2 gap-2">
-        <label
-          v-for="opt in q.options"
-          :key="opt.value"
-          :for="`${q.key}-${opt.value}`"
-          class="rounded-lg border px-3 py-2 text-center text-sm transition"
-          :class="[
-            isLocked ? 'cursor-not-allowed' : 'cursor-pointer',
-            choices[q.key] === opt.value
-              ? 'border-blue-500 bg-blue-50 font-medium text-blue-700'
-              : 'border-slate-200 text-slate-600',
-            !isLocked && choices[q.key] !== opt.value && 'hover:border-slate-300 hover:bg-slate-50',
-          ]"
-        >
-          <input
-            v-model="choices[q.key]"
-            type="radio"
-            class="sr-only"
-            :id="`${q.key}-${opt.value}`"
-            :name="q.key"
-            :value="opt.value"
-          />
-          {{ opt.label }}
-        </label>
-      </div>
-    </fieldset>
+    <!-- Mode édition : les questions -->
+    <template v-if="!isLocked">
+      <fieldset
+        v-for="(q, i) in visibleQuestions"
+        :key="q.key"
+        class="flex flex-col gap-2"
+      >
+        <legend class="mb-2 flex items-baseline gap-2 text-[10px] uppercase tracking-[0.2em] text-[#5C6270]">
+          <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
+          {{ q.label }}
+        </legend>
+        <div class="grid grid-cols-2 gap-px bg-[#1C1F26]">
+          <label
+            v-for="opt in q.options"
+            :key="opt.value"
+            :for="`${q.key}-${opt.value}`"
+            class="cursor-pointer px-3 py-3 text-center text-sm transition-colors"
+            :class="choices[q.key] === opt.value
+              ? 'bg-[#D4FF3F] font-bold text-[#0A0B0E]'
+              : 'bg-[#0A0B0E] text-[#8B9099] hover:bg-[#13151B] hover:text-white'"
+          >
+            <input
+              v-model="choices[q.key]"
+              type="radio"
+              class="sr-only"
+              :id="`${q.key}-${opt.value}`"
+              :name="q.key"
+              :value="opt.value"
+            />
+            {{ opt.label }}
+          </label>
+        </div>
+      </fieldset>
+    </template>
 
-    <p class="min-h-[2.5rem] rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+    <!-- Mode simulation : résumé compact des réponses -->
+    <dl v-else class="flex flex-col divide-y divide-[#1C1F26] border-y border-[#1C1F26]">
+      <div
+        v-for="(a, i) in answeredSummary"
+        :key="a.key"
+        class="flex items-baseline justify-between gap-3 py-2 text-xs"
+      >
+        <dt class="flex items-baseline gap-2 uppercase tracking-[0.15em] text-[#5C6270]">
+          <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
+          {{ a.label }}
+        </dt>
+        <dd class="font-bold text-[#C9CDD4]">{{ a.value }}</dd>
+      </div>
+    </dl>
+
+    <!-- Description -->
+    <p
+      class="min-h-[3.5rem] border-l-2 pl-3 text-xs leading-relaxed"
+      :class="matchedScenario ? 'border-[#D4FF3F] text-[#C9CDD4]' : 'border-[#3A3F4A] text-[#5C6270]'"
+    >
       {{ matchedScenario ? matchedScenario.description : 'Répondez aux questions pour sélectionner un scénario.' }}
     </p>
 
-    <div class="mt-auto flex gap-2 border-t border-slate-200 pt-4">
+    <!-- Navigation -->
+    <div class="mt-auto grid grid-cols-2 gap-px bg-[#1C1F26] pt-px">
       <button
         :disabled="isFirstStep"
-        class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+        class="bg-[#0A0B0E] px-3 py-3 text-xs uppercase tracking-widest text-[#C9CDD4] transition-colors hover:bg-[#13151B] hover:text-white disabled:cursor-not-allowed disabled:text-[#3A3F4A] disabled:hover:bg-[#0A0B0E]"
         @click="emit('previousStep')"
       >
-        ← Précédent
+        ← Préc.
       </button>
       <button
         :disabled="isLastStep || !matchedScenario"
-        class="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+        class="bg-[#D4FF3F] px-3 py-3 text-xs font-bold uppercase tracking-widest text-[#0A0B0E] transition-colors hover:bg-[#E4FF6E] disabled:cursor-not-allowed disabled:bg-[#1C1F26] disabled:text-[#3A3F4A]"
         @click="emit('nextStep')"
       >
-        Suivant →
+        Suiv. →
       </button>
     </div>
   </aside>

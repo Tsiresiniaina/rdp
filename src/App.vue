@@ -22,7 +22,7 @@ console.log("currentMarking =", JSON.stringify(currentMarking.value));
 </script>
 
 <template>
-  <div class="flex flex-row gap-4">
+  <div class="flex h-screen bg-[#0A0B0E]">
    <PetriNetwork
   :core="core"
   :layout="layout"
