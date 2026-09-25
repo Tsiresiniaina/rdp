@@ -18,14 +18,18 @@ const questions = [
   { key: 'testResult', label: 'Résultat du test',
     showIf: (c) => c.reparation === 'required',
     options: [{ value: 'passed', label: 'Réussi' }, { value: 'failed', label: 'Échoué' }] },
-  { key: 'piecesPostTest', label: 'Pièces après test',
-    showIf: (c) => c.reparation === 'required' && c.testResult === 'failed',
-    options: [{ value: 'available', label: 'Disponibles' }, { value: 'unavailable', label: 'Indisponibles' }] },
+ { key: 'newPiecesRequired', label: 'Nouvelles pièces',
+  showIf: (c) => c.reparation === 'required' && c.testResult === 'failed',
+  options: [{ value: 'required', label: 'Requises' }, { value: 'not required', label: 'Non requises' }] },
+{ key: 'piecesPostTest', label: 'Pièces après test',
+  showIf: (c) => c.reparation === 'required' && c.testResult === 'failed' && c.newPiecesRequired === 'required',
+  options: [{ value: 'available', label: 'Disponibles' }, { value: 'unavailable', label: 'Indisponibles' }] },
 ]
 
 // --- état
 const choices = reactive({
-  reparation: null, piecesPreTest: null, testResult: null, piecesPostTest: null,
+  reparation: null, piecesPreTest: null, testResult: null,
+  newPiecesRequired: null, piecesPostTest: null,
 })
 
 // --- dérivés
