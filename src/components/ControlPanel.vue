@@ -73,10 +73,10 @@ watch(matchedScenario, (scenario) => {
 
 <template>
   <aside
-    class="w-full max-w-xs shrink-0 flex flex-col gap-6 border-l border-[#1C1F26] bg-[#0A0B0E] p-6 font-mono text-[#C9CDD4]"
+    class="h-full w-full max-w-xs shrink-0 flex flex-col overflow-hidden border-l border-[#1C1F26] bg-[#0A0B0E] font-mono text-[#C9CDD4]"
   >
-    <!-- En-tête -->
-    <header class="flex items-end justify-between border-b border-[#1C1F26] pb-4">
+    <!-- En-tête (fixe) -->
+    <header class="flex items-end justify-between border-b border-[#1C1F26] px-5 py-4">
       <div>
         <p class="text-[10px] uppercase tracking-[0.25em] text-[#5C6270]">Simulation</p>
         <h2 class="text-xl font-bold tracking-tight text-white">Scénario</h2>
@@ -89,83 +89,83 @@ watch(matchedScenario, (scenario) => {
       </span>
     </header>
 
-    <!-- Verrou (simulation en cours) -->
-    <div
-      v-if="isLocked"
-      class="flex items-center justify-between gap-3 border border-[#D4FF3F]/40 bg-[#D4FF3F]/5 px-3 py-2"
-    >
-      <span class="flex items-center gap-2 text-xs text-[#D4FF3F]">
-        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#D4FF3F]" />
-        En cours
-      </span>
-      <button
-        class="text-xs uppercase tracking-widest text-[#C9CDD4] underline-offset-4 hover:text-[#D4FF3F] hover:underline"
-        @click="emit('reset')"
+    <!-- Zone centrale (défile si nécessaire) -->
+    <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+
+      <!-- Verrou -->
+      <div
+        v-if="isLocked"
+        class="flex items-center justify-between gap-3 border border-[#D4FF3F]/40 bg-[#D4FF3F]/5 px-3 py-2"
       >
-        ⟲ Nouveau
-      </button>
+        <span class="flex items-center gap-2 text-xs text-[#D4FF3F]">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#D4FF3F]" />
+          En cours
+        </span>
+        <button
+          class="text-xs uppercase tracking-widest text-[#C9CDD4] underline-offset-4 hover:text-[#D4FF3F] hover:underline"
+          @click="emit('reset')"
+        >
+          ⟲ Nouveau
+        </button>
+      </div>
+
+      <!-- Mode édition -->
+      <template v-if="!isLocked">
+        <fieldset v-for="(q, i) in visibleQuestions" :key="q.key" class="flex flex-col">
+          <legend class="mb-1.5 flex items-baseline gap-2 text-[10px] uppercase tracking-[0.2em] text-[#5C6270]">
+            <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
+            {{ q.label }}
+          </legend>
+          <div class="grid grid-cols-2 gap-px bg-[#1C1F26]">
+            <label
+              v-for="opt in q.options"
+              :key="opt.value"
+              :for="`${q.key}-${opt.value}`"
+              class="cursor-pointer px-3 py-2 text-center text-sm transition-colors"
+              :class="choices[q.key] === opt.value
+                ? 'bg-[#D4FF3F] font-bold text-[#0A0B0E]'
+                : 'bg-[#0A0B0E] text-[#8B9099] hover:bg-[#13151B] hover:text-white'"
+            >
+              <input
+                v-model="choices[q.key]"
+                type="radio"
+                class="sr-only"
+                :id="`${q.key}-${opt.value}`"
+                :name="q.key"
+                :value="opt.value"
+              />
+              {{ opt.label }}
+            </label>
+          </div>
+        </fieldset>
+      </template>
+
+      <!-- Mode simulation : résumé -->
+      <dl v-else class="flex flex-col divide-y divide-[#1C1F26] border-y border-[#1C1F26]">
+        <div
+          v-for="(a, i) in answeredSummary"
+          :key="a.key"
+          class="flex items-baseline justify-between gap-3 py-2 text-xs"
+        >
+          <dt class="flex items-baseline gap-2 uppercase tracking-[0.15em] text-[#5C6270]">
+            <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
+            {{ a.label }}
+          </dt>
+          <dd class="font-bold text-[#C9CDD4]">{{ a.value }}</dd>
+        </div>
+      </dl>
+
+      <!-- Description -->
+      <p
+        class="border-l-2 pl-3 text-xs leading-relaxed"
+        :class="matchedScenario ? 'border-[#D4FF3F] text-[#C9CDD4]' : 'border-[#3A3F4A] text-[#5C6270]'"
+      >
+        {{ matchedScenario ? matchedScenario.description : 'Répondez aux questions pour sélectionner un scénario.' }}
+      </p>
     </div>
 
-    <!-- Mode édition : les questions -->
-    <template v-if="!isLocked">
-      <fieldset
-        v-for="(q, i) in visibleQuestions"
-        :key="q.key"
-        class="flex flex-col gap-2"
-      >
-        <legend class="mb-2 flex items-baseline gap-2 text-[10px] uppercase tracking-[0.2em] text-[#5C6270]">
-          <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
-          {{ q.label }}
-        </legend>
-        <div class="grid grid-cols-2 gap-px bg-[#1C1F26]">
-          <label
-            v-for="opt in q.options"
-            :key="opt.value"
-            :for="`${q.key}-${opt.value}`"
-            class="cursor-pointer px-3 py-3 text-center text-sm transition-colors"
-            :class="choices[q.key] === opt.value
-              ? 'bg-[#D4FF3F] font-bold text-[#0A0B0E]'
-              : 'bg-[#0A0B0E] text-[#8B9099] hover:bg-[#13151B] hover:text-white'"
-          >
-            <input
-              v-model="choices[q.key]"
-              type="radio"
-              class="sr-only"
-              :id="`${q.key}-${opt.value}`"
-              :name="q.key"
-              :value="opt.value"
-            />
-            {{ opt.label }}
-          </label>
-        </div>
-      </fieldset>
-    </template>
-
-    <!-- Mode simulation : résumé compact des réponses -->
-    <dl v-else class="flex flex-col divide-y divide-[#1C1F26] border-y border-[#1C1F26]">
-      <div
-        v-for="(a, i) in answeredSummary"
-        :key="a.key"
-        class="flex items-baseline justify-between gap-3 py-2 text-xs"
-      >
-        <dt class="flex items-baseline gap-2 uppercase tracking-[0.15em] text-[#5C6270]">
-          <span class="text-[#D4FF3F]">0{{ i + 1 }}</span>
-          {{ a.label }}
-        </dt>
-        <dd class="font-bold text-[#C9CDD4]">{{ a.value }}</dd>
-      </div>
-    </dl>
-
-    <!-- Description -->
-    <p
-      class="min-h-[3.5rem] border-l-2 pl-3 text-xs leading-relaxed"
-      :class="matchedScenario ? 'border-[#D4FF3F] text-[#C9CDD4]' : 'border-[#3A3F4A] text-[#5C6270]'"
-    >
-      {{ matchedScenario ? matchedScenario.description : 'Répondez aux questions pour sélectionner un scénario.' }}
-    </p>
-
-    <!-- Navigation -->
-    <div class="mt-auto grid grid-cols-2 gap-px bg-[#1C1F26] pt-px">
+    <!-- Navigation (fixe en bas) -->
+    <div class="grid grid-cols-2 gap-px border-t border-[#1C1F26] bg-[#1C1F26]">
       <button
         :disabled="isFirstStep"
         class="bg-[#0A0B0E] px-3 py-3 text-xs uppercase tracking-widest text-[#C9CDD4] transition-colors hover:bg-[#13151B] hover:text-white disabled:cursor-not-allowed disabled:text-[#3A3F4A] disabled:hover:bg-[#0A0B0E]"
